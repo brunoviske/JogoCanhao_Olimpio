@@ -5,7 +5,7 @@ namespace JogoCanhao
 {
     public class BolaCanhao : GameObject
     {
-        public const int INCREMENTO = 6;
+        public const int INCREMENTO = 4;
         public float Radianos { get; set; }
 
         internal void CalcularProximaPosicao()

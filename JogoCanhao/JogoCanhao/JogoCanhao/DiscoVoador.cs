@@ -7,7 +7,6 @@ namespace JogoCanhao
 {
     public class DiscoVoador : GameObject
     {
-		public Enuns.DirecaoDisco Direcao { get; set; }
         static DiscoVoador _Instancia = null;
         public int Dano = 0;
 
@@ -15,7 +14,13 @@ namespace JogoCanhao
         public Texture2D sprite;
         public Rectangle sourceRect;
         public Vector2 origin;
-        
+        public Enuns.DirecaoDisco Direcao;
+
+        /// <summary>
+        /// Aceleracao do disco voador em pixel/s^2
+        /// </summary>
+        public const float ACELERACAO = 1f;
+
         float timer = 0f;
         float interval = 60f;
         int spriteHeight = 126;
@@ -24,6 +29,8 @@ namespace JogoCanhao
         int lastFrame = 13;
         int x0 = 0;
         int y0 = 0;
+        float velocidadeInicial = 0;
+        float totalMiliseconds = 0;
         public bool fallen = false;
         struct Queda
         {
@@ -65,7 +72,6 @@ namespace JogoCanhao
             Dano = 0;
         }
 
-
         public static DiscoVoador Instancia
         {
             get
@@ -91,8 +97,9 @@ namespace JogoCanhao
             }
             else
             {
-                CapturarMovimentoUsuario(keyState, canhao, graphicsDevice);
+                CapturarMovimentoUsuario(keyState, canhao, graphicsDevice, gameTime);
             }
+            totalMiliseconds = (float)gameTime.TotalGameTime.TotalMilliseconds;
         }
 
         private void Cair(GameTime gameTime, GraphicsDevice graphicsDevice)
@@ -108,31 +115,73 @@ namespace JogoCanhao
             }
         }
 
-        private void CapturarMovimentoUsuario(KeyboardState keyState, Canhao canhao, GraphicsDevice graphicsDevice)
+        private void CapturarMovimentoUsuario(KeyboardState keyState, Canhao canhao, GraphicsDevice graphicsDevice, GameTime time)
         {
+            SetDirecao(keyState);
+            bool houveMovimento = keyState.IsKeyDown(Keys.Right) || keyState.IsKeyDown(Keys.Left) || keyState.IsKeyDown(Keys.Down) || keyState.IsKeyDown(Keys.Up);
+
+            if (houveMovimento)
+            {
+                if (velocidadeInicial < 3.5)
+                {
+                    velocidadeInicial = velocidadeInicial + ACELERACAO * ((float)time.TotalGameTime.TotalMilliseconds - totalMiliseconds) / 1000;
+                }
+            }
+            else
+            {
+                velocidadeInicial = velocidadeInicial - ACELERACAO * ((float)time.TotalGameTime.TotalMilliseconds - totalMiliseconds) / 1000;
+                if (velocidadeInicial < 0)
+                {
+                    velocidadeInicial = 0;
+                    return;
+                }
+            }
+
             Rectangle tela = graphicsDevice.Viewport.Bounds;
             float limiteAltura = tela.Height - Imagem.Height - canhao.Imagem.Height - (tela.Height - canhao.Posicao.Y);
-            float horizontal = 0;
-            float vertical = 0;
-            int incremento = BolaCanhao.INCREMENTO / 2;
-            if (keyState.IsKeyDown(Keys.Right) && Posicao.X < tela.Width - Imagem.Width)
+
+            bool ultrapassarTela = (Direcao == Enuns.DirecaoDisco.Baixo && Posicao.Y >= limiteAltura)
+                || (Direcao == Enuns.DirecaoDisco.Cima && Posicao.Y < 0)
+                || (Direcao == Enuns.DirecaoDisco.Direita && Posicao.X >= tela.Width - Imagem.Width)
+                || (Direcao == Enuns.DirecaoDisco.Esquerda && Posicao.X < 0);
+
+            if (ultrapassarTela)
             {
-                horizontal = incremento;
+                velocidadeInicial = 0;
             }
-            else if (keyState.IsKeyDown(Keys.Left) && Posicao.X >= 0)
+            else
             {
-                horizontal = -incremento;
+                if (Direcao == Enuns.DirecaoDisco.Baixo)
+                {
+                    Posicao = new Vector2(Posicao.X, Posicao.Y + velocidadeInicial);
+                }
+                else if (Direcao == Enuns.DirecaoDisco.Cima)
+                {
+                    Posicao = new Vector2(Posicao.X, Posicao.Y - velocidadeInicial);
+                }
+                else if (Direcao == Enuns.DirecaoDisco.Direita)
+                {
+                    Posicao = new Vector2(Posicao.X + velocidadeInicial, Posicao.Y);
+                }
+                else if (Direcao == Enuns.DirecaoDisco.Esquerda)
+                {
+                    Posicao = new Vector2(Posicao.X - velocidadeInicial, Posicao.Y);
+                }
             }
-            else if (keyState.IsKeyDown(Keys.Up) && Posicao.Y >= 0)
-            {
-                vertical = -incremento;
-            }
-            else if (keyState.IsKeyDown(Keys.Down) && Posicao.Y < limiteAltura)
-            {
-                vertical = incremento;
-            }
-            Posicao = new Vector2(Posicao.X + horizontal, Posicao.Y + vertical);
         }
+
+        private void SetDirecao(KeyboardState keyState)
+        {
+            if (keyState.IsKeyDown(Keys.Right))
+                Direcao = Enuns.DirecaoDisco.Direita;
+            else if (keyState.IsKeyDown(Keys.Left))
+                Direcao = Enuns.DirecaoDisco.Esquerda;
+            else if (keyState.IsKeyDown(Keys.Down))
+                Direcao = Enuns.DirecaoDisco.Baixo;
+            else if (keyState.IsKeyDown(Keys.Up))
+                Direcao = Enuns.DirecaoDisco.Cima;
+        }
+
         //----
         public void updateExplosao(GameTime gameTime)
         {

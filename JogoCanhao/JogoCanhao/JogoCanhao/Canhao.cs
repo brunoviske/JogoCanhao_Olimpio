@@ -40,6 +40,7 @@ namespace JogoCanhao
         }
 
         const float CORRECAO_ANGULO = 43;
+        const float MARGEM_ERRO = 5;
         float _anguloReal;
         public float Angulo
         {
@@ -91,7 +92,7 @@ namespace JogoCanhao
             InformacaoDiscoVoador inf = InformacaoDiscoVoador.GetInformacao(this);
             float x = Posicao.X + inf.distancia * (float)Math.Cos(RadianosCorrigido);
             float y = Posicao.Y - inf.distancia * (float)Math.Sin(RadianosCorrigido);
-            return Math.Abs(x - inf.xDiscoVoador) <= inf.meiaLargura/2 && Math.Abs(y - inf.yDiscoVoador) <= inf.meiaAltura/2;
+            return Math.Abs(x - inf.xDiscoVoador) <= MARGEM_ERRO && Math.Abs(y - inf.yDiscoVoador) <= MARGEM_ERRO;
         }
 
         public BolaCanhao Disparar(ContentManager content)
@@ -133,16 +134,17 @@ namespace JogoCanhao
         {
             if (gameTime.TotalGameTime.TotalMilliseconds - miliSegundoUltimaAcao > 200)
             {
+                const float velocidade = 1.2f;
                 InformacaoDiscoVoador inf = InformacaoDiscoVoador.GetInformacao(this);
                 float seno = inf.catetoOposto / inf.distancia;
                 float radiano = (float)Math.Asin(seno);
                 if (radiano > RadianosCorrigido)
                 {
-                    Angulo += 1;
+                    Angulo += velocidade;
                 }
                 else if (radiano < RadianosCorrigido)
                 {
-                    Angulo -= 1;
+                    Angulo -= velocidade;
                 }
                 miliSegundoUltimaAcao = gameTime.TotalGameTime.TotalMilliseconds;
             }

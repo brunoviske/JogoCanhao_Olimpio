@@ -7,7 +7,10 @@ namespace JogoCanhao.Enuns
 {
     public enum DirecaoDisco
     {
-        Indo,
-        Voltando
+        Esquerda,
+        Direita,
+        Cima,
+        Baixo,
+        Parado
     }
 }
