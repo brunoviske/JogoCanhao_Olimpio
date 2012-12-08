@@ -40,7 +40,7 @@ namespace JogoCanhao
         }
 
         const float CORRECAO_ANGULO = 43;
-        const float MARGEM_ERRO = 5;
+        const float MARGEM_ERRO = 10;
         float _anguloReal;
         public float Angulo
         {
@@ -95,11 +95,12 @@ namespace JogoCanhao
             return Math.Abs(x - inf.xDiscoVoador) <= MARGEM_ERRO && Math.Abs(y - inf.yDiscoVoador) <= MARGEM_ERRO;
         }
 
-        public BolaCanhao Disparar(ContentManager content)
+        public BolaCanhao Disparar(ContentManager content, GameTime gameTime)
         {
-            BolaCanhao b = new BolaCanhao();
+            BolaCanhao b = new BolaCanhao(gameTime);
             b.Imagem = content.Load<Texture2D>(@"images/bolacanhao");
             b.Posicao = CalcularPosicaoBola(b);
+            b.PosicaoInicial = b.Posicao;
             b.Radianos = RadianosCorrigido;
             Som.Play();
             return b;

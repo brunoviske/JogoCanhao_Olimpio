@@ -19,7 +19,6 @@ namespace JogoCanhao
         private KeyboardState _currentKeyboardState;
         private List<BolaCanhao> bolasCanhao = null;
         double miliSegundoUltimoTiro = 0;
-        bool isGameOver = false;
         Texture2D vida;
         #endregion
 
@@ -70,7 +69,6 @@ namespace JogoCanhao
             disco.Som = Content.Load<SoundEffect>(@"sounds/hit");
             disco.Posicao = new Vector2(0, 0);
             disco.sprite = Content.Load<Texture2D>(@"images/explosao");
-
         }
 
         protected override void UnloadContent()
@@ -86,7 +84,7 @@ namespace JogoCanhao
             {
                 MoverDiscoVoador(gameTime);
                 ControlarCanhao(gameTime);
-                ControlarBolasCanhao(gameTime);
+                ControlarBolasCanhao(graphics.GraphicsDevice, gameTime);
                 disco.updateExplosao(gameTime);
             }
 
@@ -133,7 +131,7 @@ namespace JogoCanhao
             {
                 if (!disco.Destruido && (gameTime.TotalGameTime.TotalMilliseconds - miliSegundoUltimoTiro) > 300)
                 {
-                    BolaCanhao b = canhao.Disparar(Content);
+                    BolaCanhao b = canhao.Disparar(Content, gameTime);
                     bolasCanhao.Add(b);
                     miliSegundoUltimoTiro = gameTime.TotalGameTime.TotalMilliseconds;
                 }
@@ -152,11 +150,11 @@ namespace JogoCanhao
             disco.VerificarMovimento(_currentKeyboardState, canhao, GraphicsDevice, gameTime);
         }
 
-        private void ControlarBolasCanhao(GameTime gameTime)
+        private void ControlarBolasCanhao(GraphicsDevice tela, GameTime gameTime)
         {
             for (int i = 0; i < bolasCanhao.Count; i++)
             {
-                bolasCanhao[i].CalcularProximaPosicao();
+                bolasCanhao[i].CalcularProximaPosicao(tela, gameTime);
                 if (bolasCanhao[i].Posicao.Y < 0 || bolasCanhao[i].Posicao.X > GraphicsDevice.Viewport.Bounds.Width)
                 {
                     bolasCanhao.RemoveAt(i);
